@@ -3,12 +3,13 @@ title: 2024 YISF Qual Writeup
 date: 2024-08-12 12:30:00 +0900
 categories: [CTF, YISF]
 tags: [pwn, web, rev, forensics, ir, misc]
+image: /assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/81d9ad37e896e0c3517ed95ba9b4d358.png
 ---
 
 청소년부 고수들이 다 데프콘에 가서 운이 좋게도 예선 1등을 하였다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/81d9ad37e896e0c3517ed95ba9b4d358.png)
-# PWN
-## 1. yisfVM
+## PWN
+### 1. yisfVM
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/1f508906495b794c281c40303787b2f5.png)
 ```c
@@ -334,8 +335,8 @@ p.interactive()
 ```
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/ddb9edd5aaa16e21903da78fd5002e1b.png)
 FLAG: `YISF{7h15_15_v3ry_345y_vm_b0f}`
-# WEB
-## 1. webcome
+## WEB
+### 1. webcome
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/9f6b9de1a5fd75f870c6e91e04f7ec1e.png)
 ```python
@@ -441,8 +442,8 @@ print(payload)
 ```
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/f06160e3548e2777c2d1cbc394898e42.png)
 FLAG: `YISF{webCOme_T0_7He_h4CK1ng_wEbCOM3}`
-# REV
-## 1. take_your_flag
+## REV
+### 1. take_your_flag
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/a694b5d928a5f7792217be8c78891892.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/1ec09d09b60796bc74edb4fcd4c60aef.png)
@@ -546,7 +547,7 @@ print("\nCalculated Input:", input_string)
 ```
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/da84a8ff522f60b8114430e99f263df5.png)
 FLAG: `YISF{rea1_f14g_th1s_1smy_joke_h4h4_t4k2_f1ag}`
-## 2. ViroFluX
+### 2. ViroFluX
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/84cfb68be099d6f7f1f496f9587c027e.png)
 YISF CTF에 매년 빠지지 않고 등장하는 Unity Game 리버싱이다. 항상 풀 때마다 재밌다.(운영진 여러분 감사합니다.)
@@ -580,8 +581,8 @@ Target 체크 루틴을 지우고, 체크를 다 수행하면 실행하는 코�
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/e95b04a5130b848ddf76db9f8e11f03e.png)
 FLAG가 나온다.
 FLAG: `YISF{v4Cc1N3s_AtC_CoDe_J07bB}`
-# FOR
-## 1. DON'T TOUCH ME!!
+## FOR
+### 1. DON'T TOUCH ME!!
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/6ef6284ab01c77c9734cdc51c1fd3d22.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b0210f6692d730b67a25940b9034c516.png)
@@ -602,16 +603,16 @@ ZIP파일을 뽑아내어서 압축을 해제하면 donttouchme.txt 파일이 �
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/3d457d02f17deecf19606ba40ed24e14.png)
 FLAG: `YISF{oH,_you_C@uGht_m3..,,,OTL}`
 
-# IR
-## 1. \[시나리오 0\] 침해사고 의뢰
+## IR
+### 1. \[시나리오 0\] 침해사고 의뢰
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/cb0435feb2af6cc7975857f5052e5458.png)
 이 문제는 기본으로 주어지는 문제고, 나머지 3문제가 있는데 잠깐 살펴보고 안풀었다. 아니 못풀었다.
 \[시나리오 0\]의 플래그는 문제 파일 md5 해시만 입력하면 된다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/af15b0304d2621d31217613d94b95fd5.png)
 FLAG: `f292aeb00c9144daa9280b3a17857f06`
-# MISC
-## 1. Flagcut
+## MISC
+### 1. Flagcut
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/7e131e6570aa870e63440d80e8ee9a62.png)
 ```python
@@ -671,7 +672,7 @@ CHATGPT가 던져준 코드를 적절히 수정해서 돌리면 플래그가 나
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/8bd013edbe86d85a3be670932be87fd2.png)
 FLAG: `YISF{cutcutcut_flagflagfalg}`
 
-## 2. phoneTICgrief
+### 2. phoneTICgrief
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b95fff93b5ad0e06ef7a0c87d01100fe.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/bc7d0ee34ee2f3ad716b59b05fac3225.png)
