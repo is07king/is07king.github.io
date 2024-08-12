@@ -1,6 +1,6 @@
 ---
 title: 2024 YISF Qual Writeup
-description: Writeup about [ yisfVM, webcome, take_your_flag, ViroFlux, DONT'T TOUCH ME!!, [시나리오 0] 침해사고 의뢰, Flagcut, phoneTICgrief ]
+description: "Writeup about [ yisfVM, webcome, take_your_flag, ViroFlux, DONT'T TOUCH ME!!, [시나리오 0] 침해사고 의뢰, Flagcut, phoneTICgrief ]"
 date: 2024-08-12 12:30:00 +0900
 categories: [CTF, YISF]
 tags: [pwn, web, rev, forensics, ir, misc]
