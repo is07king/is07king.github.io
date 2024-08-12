@@ -335,6 +335,7 @@ p.sendline(payload2)
 p.interactive()
 ```
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/ddb9edd5aaa16e21903da78fd5002e1b.png)
+
 FLAG: `YISF{7h15_15_v3ry_345y_vm_b0f}`
 ## WEB
 ### 1. webcome
@@ -417,6 +418,7 @@ res.headers.set('X-AES-KEY', f"{AES_KEY}")
 ```
 근데 위 코드를 보면 AES_KEY를 헤더로 유출하고 있으므로, 내가 원하는 info 변수를 만들 수 있다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/02d37b84ec38d48982c01f4e9f5bea34.png)
+
 AES KEY를 구한 뒤 pickle deserialization 취약점을 이용하여 RCE를 진행한다. 전체적인 익스플로잇 코드는 아래와 같다.
 ```python
 import pickle, os, base64
@@ -442,6 +444,7 @@ payload = base64.b64encode(encrypt(pickle.dumps(RCE()))).decode('utf8')
 print(payload)
 ```
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/f06160e3548e2777c2d1cbc394898e42.png)
+
 FLAG: `YISF{webCOme_T0_7He_h4CK1ng_wEbCOM3}`
 ## REV
 ### 1. take_your_flag
@@ -450,6 +453,7 @@ FLAG: `YISF{webCOme_T0_7He_h4CK1ng_wEbCOM3}`
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/1ec09d09b60796bc74edb4fcd4c60aef.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/c6ff84882c28d3b029066d1b0f7094aa.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/62569e8223e9af3e1b41d59732ddc684.png)
+
 `sub_1499`함수에서 연산한 값이 `dword_4020 + 4 * i`와 같으면 된다는 것이다. 역연산 코드를 짜면 아래와 같다.
 ```python
 def reverse_sub_1499(target, shift):
@@ -494,6 +498,7 @@ print("\nCalculated Input:", input_string)
 ```
 근데 이 익스플로잇 코드를 돌리게 되면 이상한 문자도 섞여서 나온다. 원인을 찾기 위해 다시 분석하였다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/00a524d943914372647536a6a2e1b290.png)
+
 위와같이 추가 연산 작업이 있었고, 이를 적용해 주었다.
 최종 익스플로잇은 다음과 같다.
 ```python
@@ -547,6 +552,7 @@ print("\nCalculated Input:", input_string)
 
 ```
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/da84a8ff522f60b8114430e99f263df5.png)
+
 FLAG: `YISF{rea1_f14g_th1s_1smy_joke_h4h4_t4k2_f1ag}`
 ### 2. ViroFluX
 ---
@@ -558,59 +564,82 @@ YISF CTF에 매년 빠지지 않고 등장하는 Unity Game 리버싱이다. 항
 dnspy를 열어 `[GAME 설치 위치]/[GAME_NAME]_Data/Managed/Assembly-CSharp.dll`파일을 열어주었다. 게임을 하면서 필요한 부분 적절히 코드 수정해주었다.
 
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/7252d738e904e3c7e4785a326bf176c4.png)
+
 Target 체크 루틴을 지우고, 체크를 다 수행하면 실행하는 코드 부분만 남겼다
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/f987cb7c731fc224eab036186659ddb3.png)
+
 점수 체크 루틴도 위와 동일하게 수행해준다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/9339be0ea27bd4909d94821e49ca04ee.png)
+
 죽으면 부활하는 몹도 맨 아래 `base.gameObject.SetActive(false);`로 부활을 하지 못하도록 수정한다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/beec947f7a86d343eb385f0dbca2ab5b.png)
+
 체력이 엄청 많은 몹도 상대할 수 있도록 데미지를 엄청 높여준다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/052e57b292a4b836f839be8bb18145e9.png)
+
 점프를 높게 뛰어주도록 만들어 준다.
 
 위와 같이 모두 수정을 해주었으면, Save all하고 게임을 실행하여서 모든 Key를 먹고(모든 key를 안먹으면 fake flag가 나오는 것 같다.) Flag stage에 들어가면 된다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/1aa2e47790f2d5b983030b370f647648.png)
+
 무시무시한 놈 죽이고
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/502056d94877ff312e033776256ba29b.png)
+
 더 무시무시한 놈 죽이고
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/f06bc4a194152b50536bc6e51af6528c.png)
+
 죽으면 부활하는 놈(이젠 아님 ㅋ) 죽이고
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b296da153931b5ef127edb5c0549d708.png)
+
 악랄하게 올려놓은 KEY 먹어주고
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/afd61fe09b3a5c5058d030de7e94275f.png)
+
 마지막으로 Flag Portal을 타고 들어가면
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/e95b04a5130b848ddf76db9f8e11f03e.png)
+
 FLAG가 나온다.
+
 FLAG: `YISF{v4Cc1N3s_AtC_CoDe_J07bB}`
 ## FOR
 ### 1. DON'T TOUCH ME!!
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/6ef6284ab01c77c9734cdc51c1fd3d22.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b0210f6692d730b67a25940b9034c516.png)
+
 주어진 Hint을 보면, 이메일 포렌식을 해야한다는 방향성을 잡을 수 있다. 
 이메일 아티팩트의 위치는 `Users\[User name]\AppData\Local\Microsoft\Outlook`에 ost파일이나 pst파일이 있다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/e97fc484b624050fb8dbb664ecf1ce6c.png)
+
 이 ost 파일을 Extract 해주고, Kernel OST viewer를 이용하여 이메일을 보았다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/207f0caf501acfecfbfd94778f479d92.png)
+
 삭제된 메일함에 gdp030112@gmail.com로 보낸 메일을 확인할 수 있었고, 이 Attached된 이미지를 추출하였다. 그리고 이 이미지는 그냥 주어진게 아니란 걸 추측할 수 있다. 바로 Hxd Editor에 올리자. JPG의 Signiture footer FF D9를 조회하면 jpg 파일 다음에 PK...가 이어지는 걸 봐서 ZIP파일이 존재한다는 것을 알 수 있다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/813ff18cfcf0dccda3f2f518dd5a48b8.png)
+
 ZIP파일을 뽑아내어서 압축을 해제하면 donttouchme.txt 파일이 나오는데, 알 수 없는 문자열로 이루어져있다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/1d40ee8ac26db671bc860b488f49307c.png)
-처음엔 이게 잘 뭔지 몰라서 jpg 파일도 함께 뽑아주었다. jpg 속성->자세히->설명에 알 수없는 영문이 있었고, 이게 Key값인 것 같았다. ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b7c627bd23c0835b208fb412cab82d96.png)
+
+처음엔 이게 잘 뭔지 몰라서 jpg 파일도 함께 뽑아주었다. jpg 속성->자세히->설명에 알 수없는 영문이 있었고, 이게 Key값인 것 같았다. 
+![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b7c627bd23c0835b208fb412cab82d96.png)
+
 처음에는 passphrase를 사용하는 steghide를 사용해서 jpg에 뭔가 메시지를 숨겼나? 라고 생각을 했지만 steghide가 작동하지 않았었다. 이 설명이 그냥 주어진 것은 아닐텐데라고 생각하고 계속 고민하다가 혹시나 하고 veracrypt에 넣어보았다. 운이 좋게도, 마운트가 되었다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/c136fb3d8eef511df29bdc201b8f3686.png)
+
 그 후 마운트 된 디스크에 flag.png가 존재했고, flag.png을 열면 플래그가 나온다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/88a6869e9e4cfc4b7acaa21393a1e1dc.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/3d457d02f17deecf19606ba40ed24e14.png)
+
 FLAG: `YISF{oH,_you_C@uGht_m3..,,,OTL}`
 
 ## IR
 ### 1. \[시나리오 0\] 침해사고 의뢰
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/cb0435feb2af6cc7975857f5052e5458.png)
+
 이 문제는 기본으로 주어지는 문제고, 나머지 3문제가 있는데 잠깐 살펴보고 안풀었다. 아니 못풀었다.
 \[시나리오 0\]의 플래그는 문제 파일 md5 해시만 입력하면 된다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/af15b0304d2621d31217613d94b95fd5.png)
+
 FLAG: `f292aeb00c9144daa9280b3a17857f06`
 ## MISC
 ### 1. Flagcut
@@ -671,12 +700,14 @@ else:
 ```
 CHATGPT가 던져준 코드를 적절히 수정해서 돌리면 플래그가 나온다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/8bd013edbe86d85a3be670932be87fd2.png)
+
 FLAG: `YISF{cutcutcut_flagflagfalg}`
 
 ### 2. phoneTICgrief
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/b95fff93b5ad0e06ef7a0c87d01100fe.png)
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/bc7d0ee34ee2f3ad716b59b05fac3225.png)
+
 위 이미지와 같은 문자열이 주어지고 phonetic alphabet이 주어진다.
 ```json
 // code.json
