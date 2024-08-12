@@ -1,9 +1,10 @@
 ---
 title: 2024 YISF Qual Writeup
 date: 2024-08-12 12:15:13
-categories: [CTF, YISF]
-tags: [pwn, web, rev, forensics, ir, misc]
+categories: CTF, YISF
+tags: pwn, web, rev, forensics, ir, misc
 ---
+
 청소년부 고수들이 다 데프콘에 가서 운이 좋게도 예선 1등을 하였다.
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/81d9ad37e896e0c3517ed95ba9b4d358.png)
 # PWN
