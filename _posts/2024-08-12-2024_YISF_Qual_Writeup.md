@@ -557,6 +557,7 @@ FLAG: `YISF{rea1_f14g_th1s_1smy_joke_h4h4_t4k2_f1ag}`
 ### 2. ViroFluX
 ---
 ![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/84cfb68be099d6f7f1f496f9587c027e.png)
+
 YISF CTF에 매년 빠지지 않고 등장하는 Unity Game 리버싱이다. 항상 풀 때마다 재밌다.(운영진 여러분 감사합니다.)
 이번 문제는 지금까지 YISF CTF에서 출제되었던 게임 리버싱 문제들보다 개인적으로 조금 어려웠다. (수정할게 많아서 그런가)
 암튼 게임 리버싱의 첫번째 기본은 dnspy, cheat engine이다. 게임을 먼저 켜서 어떤 게임인지 살펴보았다. 점수를 주는 몹과 점수를 잃게 만드는 몹이 있는데 다음 스테이지 돌파를 위한 점수를 몹을 처리하면서 만들면 되는 게임이었다.
