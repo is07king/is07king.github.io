@@ -1,13 +1,13 @@
 ---
 title: 2024 YISF Qual Writeup
+description: Writeup about [ yisfVM, webcome, take_your_flag, ViroFlux, DONT'T TOUCH ME!!, [시나리오 0] 침해사고 의뢰, Flagcut, phoneTICgrief ]
 date: 2024-08-12 12:30:00 +0900
 categories: [CTF, YISF]
 tags: [pwn, web, rev, forensics, ir, misc]
 image: /assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/81d9ad37e896e0c3517ed95ba9b4d358.png
+  alt: 청소년부 고수들이 다 데프콘에 가서 운이 좋게도 예선 1등을 하였다.
 ---
 
-청소년부 고수들이 다 데프콘에 가서 운이 좋게도 예선 1등을 하였다.
-![](/assets/posts_attached/2024-08-11-2024-YISF-Qual-Writeup/81d9ad37e896e0c3517ed95ba9b4d358.png)
 ## PWN
 ### 1. yisfVM
 ---
