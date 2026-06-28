@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>나이테 - 전화 기반 AI 자서전 프로토타입</title>
+  <style>
+    :root {
+      --bg: #f7efe4;
+      --paper: #fffaf5;
+      --paper-strong: #fff8ed;
+      --cream: #f4e5d1;
+      --cream-2: #ead4ba;
+      --brown: #6f4e37;
+      --brown-2: #8a6a50;
+      --brown-3: #b78a61;
+      --green: #5f6f52;
+      --green-2: #46583c;
+      --orange: #d49a5c;
+      --red: #bc5446;
+      --text: #302820;
+      --muted: #857366;
+      --line: #ead8c2;
+      --shadow: 0 26px 60px rgba(74, 48, 28, 0.18);
+      --soft-shadow: 0 16px 36px rgba(74, 48, 28, 0.10);
+      --radius-lg: 28px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 10%, rgba(212, 154, 92, 0.26), transparent 28%),
+        radial-gradient(circle at 88% 88%, rgba(95, 111, 82, 0.18), transparent 34%),
+        var(--bg);
+    }
+
+    button, input, textarea, select {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .prototype-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(250px, 1fr) 420px minmax(250px, 1fr);
+      align-items: center;
+      gap: 34px;
+      padding: 34px;
+    }
+
+    .side-panel {
+      max-width: 390px;
+    }
+
+    .side-panel .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 14px;
+      background: rgba(255, 250, 242, 0.78);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--brown);
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 0 12px 24px rgba(74, 48, 28, 0.06);
+    }
+
+    .side-panel h1 {
+      margin: 18px 0 0;
+      font-size: 46px;
+      line-height: 1.08;
+      letter-spacing: -1.6px;
+      color: var(--brown);
+    }
+
+    .side-panel p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 16px;
+    }
+
+    .info-card {
+      margin-top: 18px;
+      padding: 20px;
+      background: rgba(255, 250, 242, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .info-card h2 {
+      margin: 0 0 10px;
+      color: var(--brown);
+      font-size: 19px;
+      letter-spacing: -0.4px;
+    }
+
+    .info-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .mini-flow {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini-flow div {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .mini-flow span {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: #f0dfca;
+      color: var(--brown);
+      font-weight: 900;
+    }
+
+    .phone-stage {
+      display: grid;
+      place-items: center;
+    }
+
+    .phone {
+      width: 390px;
+      height: 820px;
+      padding: 13px;
+      border-radius: 46px;
+      background: #2c241e;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .phone::before {
+      content: "";
+      position: absolute;
+      top: 13px;
+      left: 50%;
+      width: 132px;
+      height: 27px;
+      transform: translateX(-50%);
+      border-radius: 0 0 18px 18px;
+      background: #2c241e;
+      z-index: 50;
+    }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 34px;
+      background: var(--paper);
+      position: relative;
+      isolation: isolate;
+    }
+
+    .app.large-font {
+      font-size: 1.08em;
+    }
+
+    .statusbar {
+      height: 48px;
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 40;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 14px 23px 0;
+      font-size: 13px;
+      font-weight: 900;
+      color: rgba(48, 40, 32, 0.86);
+      pointer-events: none;
+    }
+
+    .statusbar .icons {
+      letter-spacing: 0.3px;
+    }
+
+    .screen {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      padding: 64px 22px 104px;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(111, 78, 55, 0.35) transparent;
+      animation: fadeIn 0.24s ease both;
+    }
+
+    .screen::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .screen::-webkit-scrollbar-thumb {
+      background: rgba(111, 78, 55, 0.28);
+      border-radius: 999px;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .screen.no-nav {
+      padding-bottom: 26px;
+    }
+
+    .screen.call-mode {
+      padding: 62px 18px 26px;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.20), transparent 24%),
+        linear-gradient(180deg, #6f4e37 0%, #4a3527 62%, #2d241e 100%);
+      color: white;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .center-screen {
+      min-height: calc(100% - 10px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .ring-logo {
+      width: 156px;
+      height: 156px;
+      border-radius: 50%;
+      margin: 0 auto 28px;
+      position: relative;
+      background:
+        radial-gradient(circle, transparent 0 12%, #8a6a50 13% 14%, transparent 15% 25%, #b08a67 26% 28%, transparent 29% 43%, #d7b48b 44% 47%, transparent 48% 62%, #9b7455 63% 66%, transparent 67% 80%, #6f4e37 81% 84%, transparent 85%),
+        #f2dcc2;
+      box-shadow: inset 0 0 0 10px rgba(255,255,255,0.42), 0 18px 34px rgba(111, 78, 55, 0.22);
+    }
+
+    .ring-logo::after {
+      content: "나이테";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--brown);
+      font-size: 24px;
+      font-weight: 950;
+      letter-spacing: -1px;
+    }
+
+    .hero-title {
+      margin: 0;
+      text-align: center;
+      color: var(--brown);
+      font-size: 31px;
+      line-height: 1.23;
+      letter-spacing: -1.1px;
+    }
+
+    .hero-subtitle {
+      margin: 14px auto 27px;
+      max-width: 290px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.66;
+      font-size: 15px;
+    }
+
+    .screen-head {
+      margin-bottom: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 20px;
+    }
+
+    .back-btn, .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: rgba(255, 247, 236, 0.88);
+      color: var(--brown);
+      font-size: 21px;
+      box-shadow: 0 10px 20px rgba(74, 48, 28, 0.06);
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f0dfca;
+      color: var(--brown);
+      font-size: 12px;
+      font-weight: 900;
+      border: 1px solid var(--line);
+    }
+
+    .title {
+      margin: 0;
+      color: var(--brown);
+      font-size: 29px;
+      line-height: 1.22;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.62;
+      font-size: 14px;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 16px 17px;
+      min-height: 56px;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.25;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.985);
+    }
+
+    .btn.primary {
+      color: white;
+      background: linear-gradient(135deg, var(--brown), #8b5d3b);
+      box-shadow: 0 14px 24px rgba(111, 78, 55, 0.24);
+    }
+
+    .btn.green {
+      color: white;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      box-shadow: 0 14px 24px rgba(70, 88, 60, 0.22);
+    }
+
+    .btn.secondary {
+      margin-top: 10px;
+      background: #f1dfc8;
+      color: var(--brown);
+      border: 1px solid var(--line);
+    }
+
+    .btn.ghost {
+      background: rgba(255, 247, 236, 0.65);
+      color: var(--brown);
+      border: 1px solid var(--line);
+    }
+
+    .btn.danger {
+      color: white;
+      background: var(--red);
+      box-shadow: 0 14px 24px rgba(188, 84, 70, 0.20);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-row .btn.secondary {
+      margin-top: 0;
+    }
+
+    .home-greeting {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .home-greeting h2 {
+      margin: 0;
+      color: var(--brown);
+      font-size: 25px;
+      line-height: 1.25;
+      letter-spacing: -0.8px;
+    }
+
+    .profile-dot {
+      width: 49px;
+      height: 49px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 19px;
+      background: #eed8bb;
+      box-shadow: 0 12px 20px rgba(74, 48, 28, 0.08);
+      font-size: 25px;
+    }
+
+    .call-hero-card {
+      padding: 22px;
+      border-radius: 28px;
+      color: white;
+      background:
+        radial-gradient(circle at 82% 18%, rgba(255,255,255,0.22), transparent 18%),
+        linear-gradient(135deg, #7d583f, #4d3829);
+      box-shadow: 0 22px 36px rgba(74, 48, 28, 0.20);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .call-hero-card::after {
+      content: "";
+      position: absolute;
+      right: -45px;
+      bottom: -45px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 0 0 20px rgba(255,255,255,0.04), 0 0 0 45px rgba(255,255,255,0.035);
+    }
+
+    .call-hero-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .call-hero-card .kicker {
+      margin: 0 0 8px;
+      font-size: 13px;
+      opacity: 0.84;
+      font-weight: 900;
+    }
+
+    .call-hero-card h3 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.26;
+      letter-spacing: -0.8px;
+    }
+
+    .call-hero-card p {
+      margin: 9px 0 20px;
+      font-size: 14px;
+      line-height: 1.55;
+      opacity: 0.86;
+    }
+
+    .large-call-button {
+      min-height: 74px;
+      border-radius: 24px;
+      border: 0;
+      width: 100%;
+      background: #fffaf2;
+      color: var(--brown);
+      font-size: 19px;
+      font-weight: 950;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 22px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 24px rgba(74, 48, 28, 0.06);
+    }
+
+    .card + .card {
+      margin-top: 12px;
+    }
+
+    .section-title {
+      margin: 22px 0 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--brown);
+      font-size: 16px;
+      font-weight: 950;
+      letter-spacing: -0.3px;
+    }
+
+    .section-title small {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .schedule-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .schedule-card .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .schedule-card .time {
+      color: var(--brown);
+      font-size: 21px;
+      font-weight: 950;
+      letter-spacing: -0.5px;
+    }
+
+    .schedule-card .desc {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .small-btn {
+      border: 1px solid var(--line);
+      background: #f1dfc8;
+      color: var(--brown);
+      border-radius: 999px;
+      padding: 10px 13px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 15px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff7ec;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--brown);
+      font-size: 22px;
+      letter-spacing: -0.6px;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .progress-rail {
+      height: 11px;
+      border-radius: 999px;
+      background: #ead8c2;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 64%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--brown-3));
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-card {
+      text-align: left;
+      min-height: 105px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff7ec;
+      color: var(--brown);
+      box-shadow: 0 10px 18px rgba(74, 48, 28, 0.05);
+    }
+
+    .quick-card .emoji {
+      display: block;
+      font-size: 25px;
+      margin-bottom: 8px;
+    }
+
+    .quick-card strong {
+      display: block;
+      font-size: 15px;
+      letter-spacing: -0.2px;
+    }
+
+    .quick-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .timeline-mini {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 11px;
+      align-items: start;
+    }
+
+    .history-icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      background: #eed8bb;
+      color: var(--brown);
+      font-size: 22px;
+    }
+
+    .history-item strong {
+      color: var(--brown);
+      display: block;
+      font-size: 14px;
+    }
+
+    .history-item p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 7px;
+      color: var(--brown);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--paper-strong);
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 48px;
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f1dfc8;
+      border: 1px solid var(--line);
+      color: var(--brown);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .chip.selectable {
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .chip.selectable.active {
+      color: white;
+      background: var(--brown);
+      border-color: var(--brown);
+    }
+
+    .choice-card {
+      width: 100%;
+      margin-top: 13px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1.5px solid var(--line);
+      background: var(--paper-strong);
+      text-align: left;
+      color: inherit;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .choice-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 26px rgba(74, 48, 28, 0.08);
+    }
+
+    .choice-card .emoji-box {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      background: #eed8bb;
+      font-size: 25px;
+      margin-bottom: 12px;
+    }
+
+    .choice-card h3 {
+      margin: 0;
+      color: var(--brown);
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    .choice-card p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .incoming-wrap {
+      min-height: calc(100% - 12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: white;
+    }
+
+    .incoming-screen {
+      background:
+        radial-gradient(circle at 50% 17%, rgba(255, 255, 255, 0.22), transparent 28%),
+        linear-gradient(180deg, #7b5a41 0%, #4d3829 62%, #2e241e 100%);
+    }
+
+    .caller-avatar {
+      width: 156px;
+      height: 156px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      border-radius: 50%;
+      background: rgba(255, 250, 242, 0.15);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
+      font-size: 58px;
+    }
+
+    .caller-avatar::before,
+    .caller-avatar::after {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      border-radius: inherit;
+      border: 1px solid rgba(255,255,255,0.25);
+      animation: pulse 2.1s infinite;
+    }
+
+    .caller-avatar::after {
+      inset: -28px;
+      animation-delay: 0.5s;
+      opacity: 0.55;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.88); opacity: 0.9; }
+      80%, 100% { transform: scale(1.12); opacity: 0; }
+    }
+
+    .incoming-wrap h2 {
+      margin: 34px 0 8px;
+      font-size: 28px;
+      line-height: 1.22;
+      letter-spacing: -0.9px;
+    }
+
+    .incoming-wrap p {
+      margin: 0 auto;
+      max-width: 290px;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .incoming-topic {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.88);
+      font-weight: 900;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .incoming-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      width: 100%;
+      margin-top: 42px;
+    }
+
+    .round-action {
+      border: 0;
+      border-radius: 28px;
+      min-height: 74px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 15px;
+      font-weight: 950;
+      box-shadow: 0 16px 28px rgba(0,0,0,0.18);
+    }
+
+    .round-action.accept {
+      background: #5f9c5e;
+    }
+
+    .round-action.decline {
+      background: #bc5446;
+    }
+
+    .call-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: rgba(255,255,255,0.86);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .call-topic {
+      padding: 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      margin-bottom: 14px;
+    }
+
+    .call-topic strong {
+      display: block;
+      color: white;
+      font-size: 18px;
+      letter-spacing: -0.4px;
+    }
+
+    .call-topic span {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,0.72);
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    .wave-card {
+      display: grid;
+      place-items: center;
+      padding: 18px 12px 14px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      margin-bottom: 12px;
+    }
+
+    .wave-avatar {
+      width: 86px;
+      height: 86px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 15px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.16);
+      font-size: 36px;
+    }
+
+    .wave-bars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 38px;
+    }
+
+    .wave-bars span {
+      width: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      animation: wave 1.25s ease-in-out infinite;
+    }
+
+    .wave-bars span:nth-child(1) { height: 16px; animation-delay: 0s; }
+    .wave-bars span:nth-child(2) { height: 27px; animation-delay: 0.12s; }
+    .wave-bars span:nth-child(3) { height: 36px; animation-delay: 0.24s; }
+    .wave-bars span:nth-child(4) { height: 22px; animation-delay: 0.36s; }
+    .wave-bars span:nth-child(5) { height: 31px; animation-delay: 0.48s; }
+    .wave-bars span:nth-child(6) { height: 18px; animation-delay: 0.60s; }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.7); opacity: 0.55; }
+      50% { transform: scaleY(1.12); opacity: 1; }
+    }
+
+    .transcript {
+      height: 250px;
+      overflow-y: auto;
+      padding-right: 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.32) transparent;
+    }
+
+    .call-bubble {
+      max-width: 88%;
+      padding: 12px 13px;
+      border-radius: 18px;
+      line-height: 1.52;
+      font-size: 13px;
+    }
+
+    .call-bubble.ai {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.16);
+      color: white;
+      border-bottom-left-radius: 6px;
+    }
+
+    .call-bubble.user {
+      align-self: flex-end;
+      background: rgba(95, 111, 82, 0.94);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    .call-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .call-control-btn {
+      min-height: 58px;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .call-control-btn.active {
+      background: rgba(255,255,255,0.25);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24);
+    }
+
+    .speak-row {
+      display: grid;
+      grid-template-columns: 1fr 58px;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .speak-btn {
+      min-height: 58px;
+      border: 0;
+      border-radius: 20px;
+      background: white;
+      color: var(--brown);
+      font-size: 15px;
+      font-weight: 950;
+    }
+
+    .end-btn {
+      border: 0;
+      border-radius: 20px;
+      color: white;
+      background: var(--red);
+      font-size: 22px;
+      font-weight: 950;
+    }
+
+    .summary-highlight {
+      padding: 20px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(255,255,255,0.38), transparent 20%),
+        linear-gradient(135deg, #f1ddc4, #fff7ec);
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 28px rgba(74, 48, 28, 0.08);
+    }
+
+    .summary-highlight .chapter {
+      color: var(--brown);
+      font-size: 22px;
+      font-weight: 950;
+      line-height: 1.3;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .summary-highlight p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.62;
+    }
+
+    .quote-card {
+      margin-top: 12px;
+      padding: 18px;
+      border-radius: 22px;
+      background: #f1dfc8;
+      border: 1px solid var(--line);
+    }
+
+    .quote-card small {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--brown);
+      font-weight: 950;
+    }
+
+    .quote-card p {
+      margin: 0;
+      color: #4d3829;
+      line-height: 1.58;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .family-card {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 22px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 22px rgba(74, 48, 28, 0.06);
+    }
+
+    .family-head {
+      display: grid;
+      grid-template-columns: 46px 1fr auto;
+      gap: 11px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: #eed8bb;
+      font-size: 24px;
+    }
+
+    .family-head strong {
+      display: block;
+      color: var(--brown);
+      font-size: 15px;
+    }
+
+    .family-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .family-card p {
+      margin: 0 0 12px;
+      color: var(--text);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #f1dfc8;
+      color: var(--brown);
+      font-weight: 900;
+      font-size: 11px;
+    }
+
+    .story-timeline {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .story-item {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .story-dot {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #eed8bb;
+      color: var(--brown);
+      border: 1px solid var(--line);
+      font-weight: 950;
+    }
+
+    .story-content {
+      padding: 15px;
+      border-radius: 20px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+    }
+
+    .story-content strong {
+      display: block;
+      color: var(--brown);
+      font-size: 15px;
+    }
+
+    .story-content p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 12px;
+    }
+
+    .story-extra {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 15px;
+      background: #f1dfc8;
+      color: #5c4432;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .story-content.open .story-extra {
+      display: block;
+    }
+
+    .book-cover {
+      width: 240px;
+      height: 310px;
+      margin: 18px auto;
+      padding: 30px 24px;
+      border-radius: 13px 25px 25px 13px;
+      color: white;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.15) 0 8%, transparent 9%),
+        radial-gradient(circle at 50% 58%, rgba(255,255,255,0.18), transparent 38%),
+        linear-gradient(135deg, #806149, #c29668);
+      box-shadow: 0 25px 38px rgba(74, 48, 28, 0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .book-cover::before {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.30);
+      top: 82px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow:
+        0 0 0 18px rgba(255,255,255,0.05),
+        0 0 0 38px rgba(255,255,255,0.05),
+        0 0 0 62px rgba(255,255,255,0.05);
+    }
+
+    .book-cover h3 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.28;
+      letter-spacing: -0.7px;
+    }
+
+    .book-cover p {
+      position: relative;
+      z-index: 1;
+      margin: 144px 0 0;
+      font-size: 13px;
+      opacity: 0.92;
+      line-height: 1.45;
+    }
+
+    .toc-card {
+      padding: 17px 18px;
+      border-radius: 22px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+    }
+
+    .toc-card strong {
+      display: block;
+      color: var(--brown);
+      margin-bottom: 8px;
+    }
+
+    .toc-card ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.78;
+      font-size: 13px;
+    }
+
+    .page-preview {
+      margin-top: 12px;
+      padding: 18px;
+      border-radius: 22px;
+      background: #fffaf2;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+    }
+
+    .page-preview h4 {
+      margin: 0 0 10px;
+      color: var(--brown);
+      font-size: 17px;
+    }
+
+    .page-preview p {
+      margin: 0 0 10px;
+      color: #5d4a3b;
+      line-height: 1.72;
+      font-size: 13px;
+    }
+
+    .community-card {
+      padding: 16px;
+      border-radius: 22px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      margin-top: 12px;
+      box-shadow: 0 12px 22px rgba(74, 48, 28, 0.06);
+    }
+
+    .community-card h3 {
+      margin: 0;
+      color: var(--brown);
+      font-size: 17px;
+    }
+
+    .community-card p {
+      margin: 8px 0 12px;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 13px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .action-pill {
+      border: 1px solid var(--line);
+      background: #f1dfc8;
+      color: var(--brown);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .settings-row {
+      padding: 15px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .settings-row:last-child {
+      border-bottom: 0;
+    }
+
+    .settings-row strong {
+      display: block;
+      color: var(--brown);
+      font-size: 15px;
+    }
+
+    .settings-row span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .toggle-switch {
+      width: 55px;
+      height: 32px;
+      border-radius: 999px;
+      border: 0;
+      padding: 4px;
+      background: #d8c4ad;
+      transition: background 0.18s;
+      flex: 0 0 auto;
+    }
+
+    .toggle-switch::before {
+      content: "";
+      display: block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.18s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    }
+
+    .toggle-switch.active {
+      background: var(--green);
+    }
+
+    .toggle-switch.active::before {
+      transform: translateX(23px);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .segment {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      min-height: 44px;
+      background: #f1dfc8;
+      color: var(--brown);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .segment.active {
+      color: white;
+      background: var(--brown);
+      border-color: var(--brown);
+    }
+
+    .bottom-nav {
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 80px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2px;
+      padding: 8px 7px 10px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 250, 242, 0.94);
+      backdrop-filter: blur(14px);
+      z-index: 35;
+    }
+
+    .bottom-nav.hidden {
+      display: none;
+    }
+
+    .nav-item {
+      border: 0;
+      border-radius: 16px;
+      background: transparent;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 900;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .nav-item .icon {
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .nav-item.active {
+      background: #f1dfc8;
+      color: var(--brown);
+    }
+
+    .toast {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 92px;
+      z-index: 60;
+      padding: 13px 15px;
+      border-radius: 18px;
+      background: rgba(48, 40, 32, 0.92);
+      color: white;
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: center;
+      box-shadow: 0 16px 30px rgba(0,0,0,0.20);
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.22s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .screen-label {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .desktop-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .desktop-controls button {
+      padding: 11px 15px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 242, 0.82);
+      color: var(--brown);
+      font-weight: 950;
+      box-shadow: 0 10px 22px rgba(74, 48, 28, 0.07);
+    }
+
+    .mobile-note {
+      display: none;
+      padding: 11px 14px;
+      background: rgba(255, 250, 242, 0.92);
+      border-bottom: 1px solid var(--line);
+      color: var(--brown);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 1120px) {
+      .prototype-shell {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        padding: 22px;
+      }
+
+      .side-panel {
+        max-width: 390px;
+        width: 100%;
+      }
+
+      .side-panel h1 {
+        font-size: 36px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .mobile-note {
+        display: block;
+      }
+
+      .prototype-shell {
+        padding: 0;
+        gap: 0;
+      }
+
+      .side-panel,
+      .screen-label,
+      .desktop-controls {
+        display: none;
+      }
+
+      .phone {
+        width: 100vw;
+        height: calc(100vh - 0px);
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        background: transparent;
+      }
+
+      .phone::before {
+        display: none;
+      }
+
+      .app {
+        border-radius: 0;
+      }
+
+      .statusbar {
+        padding-top: 13px;
+      }
+
+      .screen {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+
+    /* PPT UI capture mode: add ?capture=1#home etc. */
+    body.capture-mode {
+      background: transparent;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body.capture-mode .mobile-note,
+    body.capture-mode .side-panel,
+    body.capture-mode .screen-label,
+    body.capture-mode .desktop-controls { display: none !important; }
+    body.capture-mode .prototype-shell {
+      min-height: 100vh;
+      grid-template-columns: 420px;
+      padding: 0;
+      gap: 0;
+      align-items: center;
+      justify-content: center;
+    }
+    body.capture-mode .phone-stage { margin: 0; }
+    body.capture-mode .phone {
+      box-shadow: 0 34px 80px rgba(40, 38, 32, 0.22);
+    }
+    body.capture-mode.capture-clean .phone {
+      width: 390px;
+      height: 844px;
+      padding: 0;
+      border-radius: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    body.capture-mode.capture-clean .app {
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="mobile-note">나이테 전화형 프로토타입 · 스크롤과 버튼 클릭을 확인해보세요</div>
+
+  <main class="prototype-shell">
+    <aside class="side-panel">
+      <div class="eyebrow">🌳 AI 전화 자서전 앱</div>
+      <h1>나이테<br />프로토타입</h1>
+      <p>
+        어르신이 앱을 자주 열지 않아도, 정해진 시간에 AI가 먼저 전화를 걸어 삶의 이야기를 듣고 자서전으로 정리하는 흐름입니다.
+      </p>
+     
+    </aside>
+
+    <section class="phone-stage">
+      <div class="phone">
+        <div class="app" id="app">
+          <div class="statusbar">
+            <span id="statusTime">9:41</span>
+            <span class="icons">●●● Wi‑Fi 🔋</span>
+          </div>
+
+          <!-- 01. Onboarding -->
+          <section class="screen no-nav active" id="onboarding">
+            <div class="center-screen">
+              <div class="ring-logo"></div>
+              <h2 class="hero-title">당신의 삶이,<br />누군가의 기억이 되도록</h2>
+              <p class="hero-subtitle">
+                나이테는 정기적으로 전화를 걸어 어르신의 이야기를 듣고, 가족이 오래 간직할 자서전으로 정리합니다.
+              </p>
+              <button class="btn primary" data-go="setup">내 이야기 시작하기</button>
+              <button class="btn secondary" data-go="setup" data-toast="가족 선물 흐름으로 시작합니다.">부모님께 선물하기</button>
+            </div>
+          </section>
+
+          <!-- 02. Setup -->
+          <section class="screen no-nav" id="setup">
+            <div class="topbar">
+              <button class="back-btn" data-go="onboarding">‹</button>
+              <span class="pill">처음 설정</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">AI가 어떤 이야기를<br />물어보면 좋을까요?</h2>
+              <p class="subtitle">전화 인터뷰에서 사용할 기본 정보를 입력해요. 해커톤 시연용으로 값이 미리 채워져 있어요.</p>
+            </div>
+
+            <label>이름</label>
+            <input id="userName" value="김영자" />
+
+            <label>출생연도</label>
+            <input id="birthYear" value="1947" />
+
+            <label>오래 살았던 지역</label>
+            <input id="homeTown" value="전주, 서울" />
+
+            <label>했던 일</label>
+            <input value="시장 반찬가게 운영" />
+
+            <label>가족이 궁금해하는 주제</label>
+            <textarea>어린 시절, 처음 서울에 올라왔던 날, 가족을 위해 버틴 시간</textarea>
+
+            <div class="chips">
+              <span class="chip selectable active">어린 시절</span>
+              <span class="chip selectable active">고향</span>
+              <span class="chip selectable">첫 직장</span>
+              <span class="chip selectable active">가족</span>
+              <span class="chip selectable">손주에게 남길 말</span>
+            </div>
+
+            <div class="section-title">전화 주기</div>
+            <div class="segmented">
+              <button class="segment" data-schedule="매일 오후 8:00">매일</button>
+              <button class="segment active" data-schedule="매주 토요일 오후 3:00">매주</button>
+              <button class="segment" data-schedule="격주 일요일 오전 10:00">격주</button>
+            </div>
+
+            <div style="height: 20px;"></div>
+            <button class="btn primary" data-go="home">설정 완료하고 홈으로</button>
+          </section>
+
+          <!-- 03. Home -->
+          <section class="screen" id="home">
+            <div class="home-greeting">
+              <div>
+                <h2>안녕하세요,<br /><span id="homeName">김영자님</span></h2>
+                <p class="subtitle">오늘도 이야기를 한 장 남겨볼까요?</p>
+              </div>
+              <button class="profile-dot" data-go="profile" aria-label="프로필로 이동">👵</button>
+            </div>
+
+            <div class="call-hero-card">
+              <p class="kicker">수동 전화</p>
+              <h3>지금 바로<br />AI에게 전화하기</h3>
+              <p>기억나는 순간이 있을 때 앱에서 바로 전화를 걸어 이야기를 기록할 수 있어요.</p>
+              <button class="large-call-button" data-start-call="manual">📞 AI에게 전화하기</button>
+            </div>
+
+            <div class="section-title">
+              다음 정기 전화
+              <small>강제성 확보</small>
+            </div>
+            <div class="card schedule-card">
+              <div class="row">
+                <div>
+                  <div class="time" id="homeSchedule">매주 토요일 오후 3:00</div>
+                  <p class="desc">AI가 먼저 전화를 걸어 오늘의 질문을 시작합니다. 놓치면 한 번 더 알려드려요.</p>
+                </div>
+                <button class="small-btn" data-go="profile">변경</button>
+              </div>
+              <div class="button-row">
+                <button class="btn green" data-incoming="scheduled">전화 받기 시연</button>
+                <button class="btn ghost" data-toast="다음 전화 1시간 전 가족에게도 알림이 갑니다.">알림 확인</button>
+              </div>
+            </div>
+
+            <div class="section-title">자서전 진행 상황</div>
+            <div class="card">
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong>64%</strong>
+                  <span>자서전 초안 완성도</span>
+                </div>
+                <div class="metric">
+                  <strong>12회</strong>
+                  <span>누적 AI 전화 인터뷰</span>
+                </div>
+              </div>
+              <div style="height: 14px;"></div>
+              <div class="progress-rail"><div class="progress-fill"></div></div>
+            </div>
+
+            <div class="section-title">빠른 이동</div>
+            <div class="quick-grid">
+              <button class="quick-card" data-go="questions">
+                <span class="emoji">💌</span>
+                <strong>가족 질문</strong>
+                <span>손녀와 아들이 남긴 질문 보기</span>
+              </button>
+              <button class="quick-card" data-go="book">
+                <span class="emoji">📖</span>
+                <strong>자서전 보기</strong>
+                <span>오늘까지 정리된 초안 확인</span>
+              </button>
+              <button class="quick-card" data-go="story">
+                <span class="emoji">🌳</span>
+                <strong>나의 나이테</strong>
+                <span>인생 타임라인 관리</span>
+              </button>
+              <button class="quick-card" data-go="community">
+                <span class="emoji">🤎</span>
+                <strong>비슷한 나이테</strong>
+                <span>같은 세대의 이야기 읽기</span>
+              </button>
+            </div>
+
+            <div class="section-title">최근 통화 기록 <small>스크롤 영역</small></div>
+            <div class="card timeline-mini">
+              <div class="history-item">
+                <div class="history-icon">📞</div>
+                <div>
+                  <strong>전주 골목의 냄새</strong>
+                  <p>12분 통화 · 어린 시절 놀이와 밥 냄새에 대한 기억이 저장됨</p>
+                </div>
+              </div>
+              <div class="history-item">
+                <div class="history-icon">🍱</div>
+                <div>
+                  <strong>반찬가게를 열던 날</strong>
+                  <p>9분 통화 · 가족의 생계를 위해 시작한 일의 이유가 정리됨</p>
+                </div>
+              </div>
+              <div class="history-item">
+                <div class="history-icon">🚆</div>
+                <div>
+                  <strong>처음 서울에 올라오던 날</strong>
+                  <p>14분 통화 · 낯선 도시와 첫 월세방 이야기가 초안에 반영됨</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 04. Incoming Call -->
+          <section class="screen no-nav incoming-screen" id="incoming">
+            <div class="incoming-wrap">
+              <div class="caller-avatar">🌳</div>
+              <h2>나이테 AI에서<br />전화가 왔어요</h2>
+              <p>정해둔 시간에 맞춰 어르신의 이야기를 천천히 듣기 위한 전화입니다.</p>
+              <div class="incoming-topic" id="incomingTopic">오늘의 질문 · 어린 시절 골목은 어떤 모습이었나요?</div>
+              <div class="incoming-actions">
+                <button class="round-action decline" data-decline>나중에</button>
+                <button class="round-action accept" data-accept-call>받기</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 05. Phone Call -->
+          <section class="screen no-nav call-mode" id="call">
+            <div class="call-top">
+              <span>나이테 AI와 통화 중</span>
+              <span id="callTimer">00:00</span>
+            </div>
+
+            <div class="call-topic">
+              <strong id="callTitle">오늘의 자서전 인터뷰</strong>
+              <span id="callSubtitle">AI가 어르신의 속도에 맞춰 질문을 이어갑니다.</span>
+            </div>
+
+            <div class="wave-card">
+              <div class="wave-avatar">🌳</div>
+              <div class="wave-bars" aria-label="통화 음성 파형">
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <div class="transcript" id="callTranscript"></div>
+
+            <div class="call-controls">
+              <button class="call-control-btn" data-toggle-call="mute">마이크 켜짐</button>
+              <button class="call-control-btn active" data-toggle-call="speaker">스피커</button>
+              <button class="call-control-btn" data-toast="가족은 통화 종료 후 요약본만 확인할 수 있어요.">비공개</button>
+            </div>
+
+            <div class="speak-row">
+              <button class="speak-btn" id="speakButton" data-speak>🎙️ 답변 말하기</button>
+              <button class="end-btn" data-end-call aria-label="통화 종료">☎</button>
+            </div>
+          </section>
+
+          <!-- 06. Summary -->
+          <section class="screen" id="summary">
+            <div class="topbar">
+              <button class="back-btn" data-go="home">‹</button>
+              <span class="pill">통화 저장 완료</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">오늘의 이야기가<br />자서전에 추가됐어요</h2>
+              <p class="subtitle">AI가 통화 내용을 요약하고, 어르신의 말투를 살려 초안을 만들었습니다.</p>
+            </div>
+
+            <div class="summary-highlight">
+              <div class="chapter" id="summaryChapter">새 챕터 · 전주 골목의 어린 시절</div>
+              <p id="summaryText">전주 골목에서 친구들과 뛰어놀던 기억, 저녁마다 퍼지던 밥 냄새, 어려운 시기에도 가족의 웃음으로 버텼던 마음이 기록되었습니다.</p>
+            </div>
+
+            <div class="quote-card">
+              <small>말투 보존 미리보기</small>
+              <p id="summaryQuote">“아이고, 그때는 참말로 살기 팍팍했제. 그래도 식구들 웃는 거 보면 힘이 났어.”</p>
+            </div>
+
+            <div class="section-title">다음 행동</div>
+            <button class="btn primary" data-go="book">자서전 미리보기</button>
+            <button class="btn secondary" data-toast="가족에게 오늘의 통화 요약 링크를 보냈습니다.">가족에게 공유하기</button>
+            <button class="btn secondary" data-go="home">홈으로 돌아가기</button>
+          </section>
+
+          <!-- 07. Family Questions -->
+          <section class="screen" id="questions">
+            <div class="topbar">
+              <button class="back-btn" data-go="home">‹</button>
+              <span class="pill">3개의 새 질문</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">가족이 남긴<br />질문이 도착했어요</h2>
+              <p class="subtitle">원하는 질문을 누르면 그 질문을 주제로 AI 전화가 시작됩니다.</p>
+            </div>
+
+            <div class="family-card">
+              <div class="family-head">
+                <div class="avatar">👧</div>
+                <div>
+                  <strong>손녀 지민</strong>
+                  <span>방금 전</span>
+                </div>
+                <span class="tag">새 질문</span>
+              </div>
+              <p>할머니가 제 나이였을 때 가장 좋아했던 건 뭐였어요?</p>
+              <button class="btn green" data-family-call="할머니가 손녀 나이였을 때 가장 좋아했던 것">이 질문으로 전화하기</button>
+            </div>
+
+            <div class="family-card">
+              <div class="family-head">
+                <div class="avatar">👨</div>
+                <div>
+                  <strong>아들 민수</strong>
+                  <span>어제</span>
+                </div>
+                <span class="tag">중요</span>
+              </div>
+              <p>처음 서울에 올라오셨을 때 이야기가 궁금해요.</p>
+              <button class="btn green" data-family-call="처음 서울에 올라오셨을 때 이야기">이 질문으로 전화하기</button>
+            </div>
+
+            <div class="family-card">
+              <div class="family-head">
+                <div class="avatar">👩</div>
+                <div>
+                  <strong>딸 수연</strong>
+                  <span>2일 전</span>
+                </div>
+                <span class="tag">가족</span>
+              </div>
+              <p>엄마가 힘들 때마다 버틸 수 있었던 이유는 뭐였나요?</p>
+              <button class="btn green" data-family-call="힘들 때마다 버틸 수 있었던 이유">이 질문으로 전화하기</button>
+            </div>
+
+            <div class="section-title">답변 완료</div>
+            <div class="family-card">
+              <div class="family-head">
+                <div class="avatar">👦</div>
+                <div>
+                  <strong>손자 도윤</strong>
+                  <span>지난주 답변 완료</span>
+                </div>
+                <span class="tag">완료</span>
+              </div>
+              <p>할머니가 어릴 때 먹던 간식은 뭐였어요?</p>
+              <button class="btn ghost" data-toast="이미 자서전 1장에 반영된 질문입니다.">답변 보기</button>
+            </div>
+          </section>
+
+          <!-- 08. My Story -->
+          <section class="screen" id="story">
+            <div class="topbar">
+              <button class="back-btn" data-go="home">‹</button>
+              <span class="pill">64% 완성</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">김영자님의<br />나이테</h2>
+              <p class="subtitle">통화가 쌓일수록 한 사람의 삶이 나이테처럼 기록됩니다. 카드를 눌러 내용을 펼쳐보세요.</p>
+            </div>
+
+            <div class="story-timeline">
+              <div class="story-item">
+                <div class="story-dot">1</div>
+                <button class="story-content" data-expand>
+                  <strong>전주 골목에서 보낸 어린 시절</strong>
+                  <p>완료 · 3회 통화 기록</p>
+                  <div class="story-extra">골목의 흙냄새, 저녁 밥 짓는 냄새, 친구들과 고무줄놀이를 하던 기억이 정리되었습니다.</div>
+                </button>
+              </div>
+
+              <div class="story-item">
+                <div class="story-dot">2</div>
+                <button class="story-content" data-expand>
+                  <strong>처음 서울에 올라오던 날</strong>
+                  <p>작성 중 · 가족 질문 1개 연결</p>
+                  <div class="story-extra">기차역에서 느꼈던 두려움, 첫 월세방, 시장에서 일자리를 구하던 이야기가 담겼습니다.</div>
+                </button>
+              </div>
+
+              <div class="story-item">
+                <div class="story-dot">3</div>
+                <button class="story-content" data-expand>
+                  <strong>반찬가게와 가족의 식탁</strong>
+                  <p>작성 중 · 2회 통화 기록</p>
+                  <div class="story-extra">새벽 시장, 단골손님, 아이들을 먹이기 위해 만들던 반찬 이야기가 정리되었습니다.</div>
+                </button>
+              </div>
+
+              <div class="story-item">
+                <div class="story-dot">4</div>
+                <button class="story-content" data-expand>
+                  <strong>손주들에게 남기고 싶은 말</strong>
+                  <p>예정 · 다음 통화 주제</p>
+                  <div class="story-extra">다음 정기 전화에서 AI가 손주들에게 남길 말을 천천히 물어볼 예정입니다.</div>
+                </button>
+              </div>
+            </div>
+
+            <div style="height: 18px;"></div>
+            <button class="btn primary" data-go="book">책 형태로 보기</button>
+          </section>
+
+          <!-- 09. Book Preview -->
+          <section class="screen" id="book">
+            <div class="topbar">
+              <button class="back-btn" data-go="home">‹</button>
+              <span class="pill">자서전 미리보기</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">한 권의 책으로<br />정리된 삶의 이야기</h2>
+              <p class="subtitle">통화 내용은 자동으로 챕터, 문단, 인용문으로 정리됩니다.</p>
+            </div>
+
+            <div class="book-cover">
+              <h3>김영자님의<br />나이테</h3>
+              <p>전주 골목에서 가족의 식탁까지</p>
+            </div>
+
+            <div class="toc-card">
+              <strong>목차</strong>
+              <ol>
+                <li>전주 골목에서 보낸 어린 시절</li>
+                <li>처음 서울에 올라오던 날</li>
+                <li>반찬가게와 가족의 식탁</li>
+                <li>내가 버틸 수 있었던 이유</li>
+                <li>손주들에게 남기고 싶은 말</li>
+              </ol>
+            </div>
+
+            <div class="page-preview">
+              <h4>1장 · 전주 골목에서 보낸 어린 시절</h4>
+              <p>
+                영자님은 전주의 좁은 골목을 떠올릴 때마다 먼저 저녁 밥 냄새를 이야기했다. 문이 열려 있던 집들, 골목마다 모여 놀던 아이들, 해가 저물면 서로를 부르던 목소리가 아직도 선명하다고 했다.
+              </p>
+              <p>
+                “그때는 가진 건 없어도 사람 냄새가 있었어. 누가 힘들면 옆집에서 숟가락 하나 더 놓고 그랬지.”
+              </p>
+            </div>
+
+            <div class="button-row" style="margin-top: 14px;">
+              <button class="btn primary" data-toast="PDF 파일이 생성되었습니다.">PDF 저장</button>
+              <button class="btn secondary" data-toast="가족 공유 링크가 복사되었습니다.">가족 공유</button>
+            </div>
+            <button class="btn secondary" data-toast="인쇄용 책 주문 화면으로 이동합니다.">책으로 인쇄하기</button>
+          </section>
+
+          <!-- 10. Community -->
+          <section class="screen" id="community">
+            <div class="topbar">
+              <button class="back-btn" data-go="home">‹</button>
+              <span class="pill">선택 공유</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">비슷한 나이테</h2>
+              <p class="subtitle">개인이 허락한 이야기만 일부 공유됩니다. 따뜻한 공감 중심의 커뮤니티예요.</p>
+            </div>
+
+            <div class="community-card">
+              <span class="tag">1940년대생</span>
+              <h3>전라도 고향의 여름밤</h3>
+              <p>“마당에 평상을 펴고 누우면 별이 참 많았지요. 그때는 선풍기도 귀했지만 마음은 시원했습니다.”</p>
+              <div class="card-actions">
+                <button class="action-pill" data-like="like1">🤎 공감 <span id="like1">42</span></button>
+                <button class="action-pill" data-toast="댓글 입력창이 열렸습니다.">💬 댓글</button>
+              </div>
+            </div>
+
+            <div class="community-card">
+              <span class="tag">첫 월급</span>
+              <h3>봉투째 어머니께 드렸던 날</h3>
+              <p>처음 받은 월급을 쥐고 버스 안에서 몇 번이나 봉투를 만져봤다는 이야기입니다.</p>
+              <div class="card-actions">
+                <button class="action-pill" data-like="like2">🤎 공감 <span id="like2">31</span></button>
+                <button class="action-pill" data-toast="댓글 입력창이 열렸습니다.">💬 댓글</button>
+              </div>
+            </div>
+
+            <div class="community-card">
+              <span class="tag">손주에게</span>
+              <h3>천천히 살아도 괜찮다</h3>
+              <p>손주에게 남긴 짧은 편지. “남들보다 늦는다고 네 삶이 작은 것은 아니다.”</p>
+              <div class="card-actions">
+                <button class="action-pill" data-like="like3">🤎 공감 <span id="like3">58</span></button>
+                <button class="action-pill" data-toast="댓글 입력창이 열렸습니다.">💬 댓글</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 11. Profile -->
+          <section class="screen" id="profile">
+            <div class="topbar">
+              <button class="back-btn" data-go="home">‹</button>
+              <span class="pill">설정</span>
+            </div>
+            <div class="screen-head">
+              <h2 class="title">전화와 접근성<br />설정</h2>
+              <p class="subtitle">어르신이 부담 없이 꾸준히 기록할 수 있도록 전화 주기와 글자 크기를 조정합니다.</p>
+            </div>
+
+            <div class="card">
+              <div class="settings-row">
+                <div>
+                  <strong>정기 전화 시간</strong>
+                  <span id="profileSchedule">매주 토요일 오후 3:00</span>
+                </div>
+                <button class="small-btn" data-toast="아래 버튼으로 전화 주기를 바꿀 수 있어요.">변경</button>
+              </div>
+
+              <div class="settings-row">
+                <div>
+                  <strong>두 번 놓치면 가족 알림</strong>
+                  <span>기록 지속성을 위해 부드럽게 리마인드합니다.</span>
+                </div>
+                <button class="toggle-switch active" data-toggle-switch aria-label="가족 알림 토글"></button>
+              </div>
+
+              <div class="settings-row">
+                <div>
+                  <strong>큰 글씨 모드</strong>
+                  <span>노인 사용자를 위해 화면 글씨를 키웁니다.</span>
+                </div>
+                <button class="toggle-switch" data-font-toggle aria-label="큰 글씨 모드 토글"></button>
+              </div>
+
+              <div class="settings-row">
+                <div>
+                  <strong>말투와 사투리 보존</strong>
+                  <span>자서전에 사용자의 목소리를 살려 반영합니다.</span>
+                </div>
+                <button class="toggle-switch active" data-toggle-switch aria-label="말투 보존 토글"></button>
+              </div>
+            </div>
+
+            <div class="section-title">전화 주기 바꾸기</div>
+            <div class="segmented">
+              <button class="segment" data-schedule="매일 오후 8:00">매일</button>
+              <button class="segment active" data-schedule="매주 토요일 오후 3:00">매주</button>
+              <button class="segment" data-schedule="격주 일요일 오전 10:00">격주</button>
+            </div>
+
+            <div style="height: 16px;"></div>
+            <button class="btn primary" data-incoming="scheduled">정기 전화 테스트</button>
+            <button class="btn secondary" data-go="home">홈으로 돌아가기</button>
+          </section>
+
+          <nav class="bottom-nav hidden" id="bottomNav" aria-label="하단 내비게이션">
+            <button class="nav-item" data-nav="home"><span class="icon">🏠</span>홈</button>
+            <button class="nav-item" data-nav="questions"><span class="icon">💌</span>질문</button>
+            <button class="nav-item" data-nav="story"><span class="icon">🌳</span>나이테</button>
+            <button class="nav-item" data-nav="community"><span class="icon">🤎</span>공감</button>
+            <button class="nav-item" data-nav="profile"><span class="icon">⚙️</span>설정</button>
+          </nav>
+
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="screen-label" id="screenLabel">01 온보딩</div>
+      <div class="desktop-controls">
+        <button data-prev>← 이전 화면</button>
+        <button data-next>다음 화면 →</button>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+     
+    </aside>
+  </main>
+
+  <script>
+    const app = document.getElementById("app");
+    const screens = Array.from(document.querySelectorAll(".screen"));
+    const bottomNav = document.getElementById("bottomNav");
+    const navItems = Array.from(document.querySelectorAll(".nav-item"));
+    const screenLabel = document.getElementById("screenLabel");
+    const toast = document.getElementById("toast");
+    const statusTime = document.getElementById("statusTime");
+
+    const labels = {
+      onboarding: "01 온보딩",
+      setup: "02 기본 설정",
+      home: "03 홈 / 전화 대시보드",
+      incoming: "04 정기 전화 수신",
+      call: "05 AI 전화 통화",
+      summary: "06 통화 요약 저장",
+      questions: "07 가족 질문",
+      story: "08 나의 나이테",
+      book: "09 자서전 미리보기",
+      community: "10 커뮤니티",
+      profile: "11 설정"
+    };
+
+    const orderedScreens = ["onboarding", "setup", "home", "incoming", "call", "summary", "questions", "story", "book", "community", "profile"];
+    const navScreens = ["home", "questions", "story", "community", "profile"];
+
+    const state = {
+      current: "onboarding",
+      previous: "onboarding",
+      schedule: "매주 토요일 오후 3:00",
+      context: "scheduled",
+      familyTopic: "",
+      callStep: 0,
+      timer: 0,
+      timerId: null,
+      muted: false,
+      speaker: true,
+      largeFont: false,
+      summaryType: "scheduled"
+    };
+
+    const hashToScreen = {
+      start: "onboarding",
+      onboarding: "onboarding",
+      setup: "setup",
+      home: "home",
+      incoming: "incoming",
+      call: "call",
+      summary: "summary",
+      questions: "questions",
+      story: "story",
+      book: "book",
+      community: "community",
+      profile: "profile"
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("capture") === "1") document.body.classList.add("capture-mode");
+    if (params.get("clean") === "1") document.body.classList.add("capture-clean");
+
+    function getScreenFromHash() {
+      const key = decodeURIComponent((window.location.hash || "").replace(/^#/, "")).trim();
+      return hashToScreen[key] || null;
+    }
+
+    const scripts = {
+      scheduled: {
+        title: "정기 자서전 전화",
+        subtitle: "오늘은 어린 시절의 공간과 냄새를 중심으로 질문할게요.",
+        incoming: "오늘의 질문 · 어린 시절 골목은 어떤 모습이었나요?",
+        first: "영자님, 오늘은 전주에서 보내신 어린 시절 이야기를 들어보고 싶어요. 그때 골목은 어떤 모습이었나요?",
+        pairs: [
+          {
+            user: "골목마다 애들이 많았고, 저녁이면 집집마다 밥 냄새가 났지.",
+            ai: "그 냄새를 떠올리면 가장 먼저 생각나는 집이나 사람이 있으신가요?"
+          },
+          {
+            user: "옆집 순이 엄마가 늘 우리한테 김치전 한 장씩 나눠주곤 했어.",
+            ai: "그 장면은 정말 따뜻하네요. 그때 사람들은 서로를 어떻게 도왔나요?"
+          },
+          {
+            user: "없는 살림이어도 누가 힘들면 숟가락 하나 더 놓고 그랬지.",
+            ai: "그 마음을 자서전에 꼭 남기면 좋겠어요. 영자님께 그 시절은 어떤 의미였나요?"
+          }
+        ],
+        summaryChapter: "새 챕터 · 전주 골목의 어린 시절",
+        summaryText: "전주 골목에서 친구들과 뛰어놀던 기억, 저녁마다 퍼지던 밥 냄새, 어려운 시기에도 이웃과 가족의 웃음으로 버텼던 마음이 기록되었습니다.",
+        quote: "“없는 살림이어도 누가 힘들면 숟가락 하나 더 놓고 그랬지.”"
+      },
+      manual: {
+        title: "수동 전화 기록",
+        subtitle: "지금 떠오른 기억을 바로 기록하는 전화입니다.",
+        incoming: "직접 건 전화 · 오늘 떠오른 기억을 들려주세요.",
+        first: "영자님, 지금 떠오른 기억이 있으셨군요. 어떤 장면부터 이야기해볼까요?",
+        pairs: [
+          {
+            user: "오늘 갑자기 시장 반찬가게 처음 열던 날이 생각났어.",
+            ai: "그날 아침이 떠오르시나요? 문을 열기 전 어떤 마음이셨나요?"
+          },
+          {
+            user: "무섭기도 했지만 아이들 먹여 살리려면 해야 했지.",
+            ai: "그 결심이 느껴져요. 첫 손님은 어떤 분이었는지 기억나세요?"
+          },
+          {
+            user: "단골 아주머니가 오셔서 멸치볶음 맛있다고 해준 게 아직도 기억나.",
+            ai: "그 한마디가 영자님께 어떤 힘이 되었는지 자서전에 담아볼게요."
+          }
+        ],
+        summaryChapter: "새 챕터 · 반찬가게를 열던 날",
+        summaryText: "처음 반찬가게를 열던 아침의 두려움, 가족을 책임져야 한다는 결심, 첫 단골손님의 칭찬이 오래도록 힘이 되었던 기억이 정리되었습니다.",
+        quote: "“무섭기도 했지만 아이들 먹여 살리려면 해야 했지.”"
+      },
+      family: {
+        title: "가족 질문 전화",
+        subtitle: "가족이 남긴 질문을 중심으로 이야기를 듣습니다.",
+        incoming: "가족 질문 · 손녀가 궁금해한 이야기에 답해주세요.",
+        first: "영자님, 가족이 남긴 질문으로 전화를 드렸어요. 질문은 ‘{topic}’입니다. 이 이야기는 어디서부터 시작하면 좋을까요?",
+        pairs: [
+          {
+            user: "우리 지민이 나이였을 때는 노는 게 제일 좋았지. 고무줄놀이를 참 많이 했어.",
+            ai: "그때 함께 놀던 친구들의 이름이나 얼굴도 기억나시나요?"
+          },
+          {
+            user: "순이랑 미자랑 늘 붙어 다녔어. 해 지는 줄도 모르고 놀았지.",
+            ai: "그 친구들과 헤어지던 순간이나 다시 보고 싶었던 마음도 있었나요?"
+          },
+          {
+            user: "세월이 지나니 이름만 남았지만, 그때 웃음소리는 아직 남아 있어.",
+            ai: "그 문장은 손녀에게도 큰 선물이 될 것 같아요. 그대로 자서전에 남겨둘게요."
+          }
+        ],
+        summaryChapter: "새 챕터 · 손녀의 질문에 답하다",
+        summaryText: "손녀가 남긴 질문을 통해 어린 시절 가장 좋아했던 놀이, 친구들의 이름, 세월이 지나도 남아 있는 웃음소리가 기록되었습니다.",
+        quote: "“세월이 지나니 이름만 남았지만, 그때 웃음소리는 아직 남아 있어.”"
+      }
+    };
+
+    function setClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, "0");
+      const m = String(now.getMinutes()).padStart(2, "0");
+      statusTime.textContent = `${h}:${m}`;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("show"), 2100);
+    }
+
+    function navigate(id, options = {}) {
+      if (!labels[id]) return;
+      state.previous = state.current;
+      state.current = id;
+
+      screens.forEach(screen => {
+        screen.classList.toggle("active", screen.id === id);
+        if (screen.id === id) screen.scrollTop = 0;
+      });
+
+      screenLabel.textContent = labels[id] || "";
+      const hideNav = ["onboarding", "setup", "incoming", "call"].includes(id);
+      bottomNav.classList.toggle("hidden", hideNav);
+
+      navItems.forEach(item => {
+        const target = item.dataset.nav;
+        item.classList.toggle("active", target === id || (id === "summary" && target === "story") || (id === "book" && target === "story"));
+      });
+
+      if (!options.fromHash && window.location.hash.replace(/^#/, "") !== id) {
+        history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${id}`);
+      }
+
+      if (!options.silent && id !== "call") {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+    }
+
+    function setSchedule(value) {
+      state.schedule = value;
+      document.getElementById("homeSchedule").textContent = value;
+      document.getElementById("profileSchedule").textContent = value;
+      document.querySelectorAll("[data-schedule]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.schedule === value);
+      });
+      showToast(`정기 전화가 '${value}'로 설정되었습니다.`);
+    }
+
+    function prepareIncoming(context, topic = "") {
+      state.context = context;
+      state.familyTopic = topic;
+      const script = scripts[context] || scripts.scheduled;
+      const incomingTopic = document.getElementById("incomingTopic");
+
+      if (context === "family") {
+        incomingTopic.textContent = `가족 질문 · ${topic}`;
+      } else if (context === "manual") {
+        incomingTopic.textContent = "직접 건 전화 · 지금 떠오른 기억을 기록합니다.";
+      } else {
+        incomingTopic.textContent = script.incoming;
+      }
+
+      navigate("incoming");
+    }
+
+    function addCallBubble(type, text) {
+      const transcript = document.getElementById("callTranscript");
+      const bubble = document.createElement("div");
+      bubble.className = `call-bubble ${type}`;
+      bubble.textContent = text;
+      transcript.appendChild(bubble);
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    function formatTimer(seconds) {
+      const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const s = String(seconds % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function beginCall(context = state.context) {
+      state.context = context;
+      state.summaryType = context;
+      state.callStep = 0;
+      state.timer = 0;
+
+      const script = scripts[context] || scripts.scheduled;
+      const transcript = document.getElementById("callTranscript");
+      transcript.innerHTML = "";
+
+      document.getElementById("callTitle").textContent = script.title;
+      document.getElementById("callSubtitle").textContent = context === "family"
+        ? `가족 질문: ${state.familyTopic}`
+        : script.subtitle;
+
+      const firstQuestion = context === "family"
+        ? script.first.replace("{topic}", state.familyTopic || "가족이 궁금해한 이야기")
+        : script.first;
+
+      addCallBubble("ai", firstQuestion);
+
+      document.getElementById("speakButton").textContent = "🎙️ 답변 말하기";
+      document.getElementById("callTimer").textContent = "00:00";
+
+      clearInterval(state.timerId);
+      state.timerId = setInterval(() => {
+        state.timer += 1;
+        document.getElementById("callTimer").textContent = formatTimer(state.timer);
+      }, 1000);
+
+      navigate("call", { silent: true });
+    }
+
+    function speakAnswer() {
+      const script = scripts[state.context] || scripts.scheduled;
+      const pair = script.pairs[state.callStep];
+
+      if (!pair) {
+        showToast("오늘 들은 내용을 자서전 초안으로 정리할 준비가 되었어요.");
+        endCall();
+        return;
+      }
+
+      addCallBubble("user", pair.user);
+      setTimeout(() => addCallBubble("ai", pair.ai), 260);
+
+      state.callStep += 1;
+      if (state.callStep >= script.pairs.length) {
+        document.getElementById("speakButton").textContent = "통화 마치고 저장하기";
+      } else {
+        document.getElementById("speakButton").textContent = `🎙️ 계속 답하기 ${state.callStep + 1}/${script.pairs.length}`;
+      }
+    }
+
+    function endCall() {
+      clearInterval(state.timerId);
+      state.timerId = null;
+      const script = scripts[state.summaryType] || scripts.scheduled;
+      document.getElementById("summaryChapter").textContent = script.summaryChapter;
+      document.getElementById("summaryText").textContent = script.summaryText;
+      document.getElementById("summaryQuote").textContent = script.quote;
+      navigate("summary");
+      showToast("통화가 저장되고 자서전 초안이 생성되었습니다.");
+    }
+
+    function toggleCallControl(button, type) {
+      if (type === "mute") {
+        state.muted = !state.muted;
+        button.classList.toggle("active", state.muted);
+        button.textContent = state.muted ? "마이크 꺼짐" : "마이크 켜짐";
+      }
+      if (type === "speaker") {
+        state.speaker = !state.speaker;
+        button.classList.toggle("active", state.speaker);
+        button.textContent = state.speaker ? "스피커" : "수화음";
+      }
+    }
+
+    function goNext() {
+      const i = orderedScreens.indexOf(state.current);
+      navigate(orderedScreens[Math.min(i + 1, orderedScreens.length - 1)]);
+    }
+
+    function goPrev() {
+      const i = orderedScreens.indexOf(state.current);
+      navigate(orderedScreens[Math.max(i - 1, 0)]);
+    }
+
+    document.addEventListener("click", (event) => {
+      const go = event.target.closest("[data-go]");
+      if (go) {
+        navigate(go.dataset.go);
+        return;
+      }
+
+      const nav = event.target.closest("[data-nav]");
+      if (nav) {
+        navigate(nav.dataset.nav);
+        return;
+      }
+
+      const startCall = event.target.closest("[data-start-call]");
+      if (startCall) {
+        beginCall(startCall.dataset.startCall);
+        return;
+      }
+
+      const incoming = event.target.closest("[data-incoming]");
+      if (incoming) {
+        prepareIncoming(incoming.dataset.incoming);
+        return;
+      }
+
+      const familyCall = event.target.closest("[data-family-call]");
+      if (familyCall) {
+        prepareIncoming("family", familyCall.dataset.familyCall);
+        return;
+      }
+
+      if (event.target.closest("[data-accept-call]")) {
+        beginCall(state.context);
+        return;
+      }
+
+      if (event.target.closest("[data-decline]")) {
+        navigate("home");
+        showToast("이번 전화는 미뤘어요. 30분 뒤 한 번 더 알려드립니다.");
+        return;
+      }
+
+      if (event.target.closest("[data-speak]")) {
+        speakAnswer();
+        return;
+      }
+
+      if (event.target.closest("[data-end-call]")) {
+        endCall();
+        return;
+      }
+
+      const toggleCall = event.target.closest("[data-toggle-call]");
+      if (toggleCall) {
+        toggleCallControl(toggleCall, toggleCall.dataset.toggleCall);
+        return;
+      }
+
+      const schedule = event.target.closest("[data-schedule]");
+      if (schedule) {
+        setSchedule(schedule.dataset.schedule);
+        return;
+      }
+
+      const toastBtn = event.target.closest("[data-toast]");
+      if (toastBtn) {
+        showToast(toastBtn.dataset.toast);
+        return;
+      }
+
+      const like = event.target.closest("[data-like]");
+      if (like) {
+        const id = like.dataset.like;
+        const span = document.getElementById(id);
+        span.textContent = String(Number(span.textContent) + 1);
+        showToast("공감이 전달되었습니다.");
+        return;
+      }
+
+      const expand = event.target.closest("[data-expand]");
+      if (expand) {
+        expand.classList.toggle("open");
+        return;
+      }
+
+      const chip = event.target.closest(".chip.selectable");
+      if (chip) {
+        chip.classList.toggle("active");
+        return;
+      }
+
+      const toggleSwitch = event.target.closest("[data-toggle-switch]");
+      if (toggleSwitch) {
+        toggleSwitch.classList.toggle("active");
+        showToast(toggleSwitch.classList.contains("active") ? "설정이 켜졌습니다." : "설정이 꺼졌습니다.");
+        return;
+      }
+
+      const fontToggle = event.target.closest("[data-font-toggle]");
+      if (fontToggle) {
+        state.largeFont = !state.largeFont;
+        fontToggle.classList.toggle("active", state.largeFont);
+        app.classList.toggle("large-font", state.largeFont);
+        showToast(state.largeFont ? "큰 글씨 모드가 켜졌습니다." : "큰 글씨 모드가 꺼졌습니다.");
+        return;
+      }
+
+      if (event.target.closest("[data-prev]")) {
+        goPrev();
+        return;
+      }
+
+      if (event.target.closest("[data-next]")) {
+        goNext();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") goNext();
+      if (event.key === "ArrowLeft") goPrev();
+      if (event.key === "Escape" && state.current === "call") endCall();
+    });
+
+    window.addEventListener("hashchange", () => {
+      const target = getScreenFromHash();
+      if (target) navigate(target, { fromHash: true });
+    });
+
+    setClock();
+    setInterval(setClock, 30000);
+
+    const initialScreen = getScreenFromHash();
+    if (initialScreen) {
+      navigate(initialScreen, { fromHash: true, silent: true });
+      if (initialScreen === "call") {
+        document.getElementById("callTitle").textContent = scripts.scheduled.title;
+        document.getElementById("callSubtitle").textContent = scripts.scheduled.subtitle;
+        const transcript = document.getElementById("callTranscript");
+        transcript.innerHTML = "";
+        addCallBubble("ai", scripts.scheduled.first);
+        addCallBubble("user", scripts.scheduled.pairs[0].user);
+        addCallBubble("ai", scripts.scheduled.pairs[0].ai);
+        document.getElementById("callTimer").textContent = "00:34";
+      }
+    }
+  </script>
+</body>
+</html>
